@@ -12,7 +12,7 @@
       <ion-grid v-if="pokemonVisible.length">
         <ion-row v-for="pokemonRow in pokemonVisible">
           <ion-col v-for="pokemon in pokemonRow">
-            <ion-card>
+            <ion-card @click="openModal(pokemon.url)">
               <ion-avatar>
                 <img :src="getSpriteLink(pokemon.url)" />
               </ion-avatar>
@@ -46,26 +46,56 @@
         Next 12
       </ion-button>
     </ion-toolbar>
+
+    <ion-modal
+      :is-open="isModalOpen"
+      @close="closeModal"
+      @ionBackdropTap="closeModal"
+    >
+      <ion-toolbar>
+        <ion-button @click="closeModal" slot="end" fill="outline">
+          Close
+        </ion-button>
+      </ion-toolbar>
+      {{ JSON.stringify(pokemonInfo) }}
+    </ion-modal>
   </ion-page>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
 import {
+  IonAvatar,
   IonButton,
   IonContent,
+  IonModal,
   IonPage,
   IonRadio,
   IonRadioGroup,
   IonTitle,
   IonToolbar,
 } from "@ionic/vue";
+import { usePokemonInfo } from "../composables/use-pokemon-info";
 import { usePokemonList } from "../composables/use-pokemon-list";
 
 const { pokemonVisible, offset, orderBy, total, loadPrevious, loadNext } =
   usePokemonList();
+const { pokemonInfo, pokemonPath } = usePokemonInfo();
 
 const spriteUrl: string =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
+
+const isModalOpen = ref(false);
+
+const openModal = (path: string) => {
+  pokemonPath.value = path;
+  console.log(pokemonPath.value);
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+};
 
 function getSpriteLink(url?: string) {
   // parse ID from pokemon's url then append to sprite path
